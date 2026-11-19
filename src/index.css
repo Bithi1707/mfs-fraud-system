@@ -11,9 +11,10 @@ html {
 
 body {
   min-width: 320px;
-  min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
-  background: #f7f7fb;
+  background: #ffffff;
+  overscroll-behavior-y: none;
 }
 
 button {
@@ -21,7 +22,7 @@ button {
 }
 
 #root {
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 
