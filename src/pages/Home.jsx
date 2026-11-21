@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-
+import { useNavigate } from "react-router-dom";
+import Payment from "./transactions/Payment";
 import {
   Wallet,
   Bell,
@@ -104,11 +105,12 @@ const transactions = [
 
 export default function Home() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("Home");
-
+  const [activeTransaction, setActiveTransaction] = useState(null);
   const userName = user?.displayName || "Finora User";
   const firstName = userName.split(" ")[0];
 
@@ -117,10 +119,22 @@ export default function Home() {
       .toLowerCase()
       .includes(search.toLowerCase())
   );
-
+  
   const handleService = (service) => {
-    alert(`${service} feature will be implemented in the next step.`);
-  };
+
+  if (service === "Send Money") {
+    navigate("/send-money");
+    return;
+  }
+
+  if (service === "Payment") {
+    navigate("/payment");
+    return;
+  }
+
+  alert(`${service} interface is coming soon!`);
+};
+
 
   const handleLogout = async () => {
     try {
@@ -133,6 +147,13 @@ export default function Home() {
 
   return (
     <div className="finora-page">
+      {activeTransaction === "Payment" ? (
+
+      <Payment
+        onBack={() => setActiveTransaction(null)}
+      />
+
+    ) : (
       <main className="finora-container">
 
         {/* HEADER */}
@@ -368,6 +389,7 @@ export default function Home() {
         </button>
 
       </main>
+    )}
     </div>
   );
 }

@@ -1,0 +1,259 @@
+
+.send-page {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  margin: auto;
+  padding: 24px 20px 100px;
+  background: #fff;
+  color: #29243c;
+  font-family: Inter, "Segoe UI", sans-serif;
+}
+
+.send-header {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 27px;
+}
+
+.send-header h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.send-header p {
+  margin: 4px 0 0;
+  color: #9992a7;
+  font-size: 11px;
+}
+
+.send-header > svg {
+  margin-left: auto;
+}
+
+.send-back {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 13px;
+  background: #fff0f5;
+  color: #d9468d;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.send-card {
+  padding: 22px 19px;
+  border: 1px solid #f1eaf0;
+  border-radius: 21px;
+  background: #fff;
+  box-shadow: 0 7px 25px rgba(80, 40, 75, 0.045);
+  margin-bottom: 20px;
+}
+
+.send-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  background: #fff0f5;
+  color: #d9468d;
+  border-radius: 17px;
+  margin-bottom: 15px;
+}
+
+.send-card h3 {
+  font-size: 17px;
+  margin: 0 0 7px;
+}
+
+.send-card > p {
+  font-size: 11px;
+  color: #9992a7;
+  margin: 0 0 23px;
+}
+
+.send-card label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  margin: 17px 0 9px;
+  color: #51475e;
+}
+
+.send-input {
+  height: 49px;
+  border: 1px solid #eee8f0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 13px;
+  color: #d9468d;
+}
+
+.send-input:focus-within {
+  border-color: #d9468d;
+  box-shadow: 0 0 0 3px #fff0f5;
+}
+
+.send-input input,
+.amount-input input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 13px;
+  color: #29243c;
+}
+
+.amount-input {
+  height: 75px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 17px;
+  border-radius: 15px;
+  background: #fff4f8;
+  border: 1px solid #f8dce9;
+  color: #d9468d;
+}
+
+.amount-input span {
+  font-size: 27px;
+  font-weight: 800;
+}
+
+.amount-input input {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.reference-input {
+  width: 100%;
+  height: 47px;
+  padding: 0 13px;
+  border: 1px solid #eee8f0;
+  border-radius: 12px;
+  outline: none;
+}
+
+.reference-input:focus {
+  border-color: #d9468d;
+}
+
+.send-primary {
+  width: 100%;
+  min-height: 52px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(110deg, #d9468d, #9a54d8);
+  color: white;
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(217, 70, 141, 0.19);
+}
+
+.send-primary:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.send-secondary {
+  width: 100%;
+  padding: 13px;
+  margin-top: 10px;
+  border: 1px solid #eee5ef;
+  border-radius: 12px;
+  background: white;
+  color: #8d4cae;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.send-error {
+  color: #d74758 !important;
+  font-size: 12px !important;
+  margin: 10px 0 !important;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f2edf2;
+  font-size: 11px;
+}
+
+.summary-row span {
+  color: #9992a7;
+}
+
+.summary-row strong {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.summary-total {
+  text-align: center;
+  background: #fff3f8;
+  border-radius: 15px;
+  padding: 19px;
+  margin: 20px 0;
+}
+
+.summary-total span {
+  font-size: 11px;
+  color: #9992a7;
+}
+
+.summary-total h2 {
+  font-size: 27px;
+  color: #d9468d;
+  margin: 8px 0 0;
+}
+
+.success-card {
+  text-align: center;
+  padding-top: 35px;
+}
+
+.success-card > svg {
+  margin-bottom: 17px;
+}
+
+.success-card h2 {
+  font-size: 21px;
+}
+
+.success-card h1 {
+  font-size: 32px;
+  color: #d9468d;
+  margin: 25px 0;
+}
+
+.success-card .summary-row {
+  text-align: left;
+}
+
+.success-card .send-primary {
+  margin-top: 25px;
+}
+
+@media (min-width: 431px) {
+  .send-page {
+    min-height: calc(100vh - 50px);
+    border-radius: 25px;
+    box-shadow: 0 8px 40px rgba(30, 20, 50, .09);
+  }
+}
