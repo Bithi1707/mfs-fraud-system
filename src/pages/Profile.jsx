@@ -24,7 +24,9 @@ import {
   getErrorMessage,
   resetPinWithPassword,
   savePin,
-  updateName
+  updateName,
+  saveCurrentAddress,
+  savePermanentAddress
 } from "../services/profileService";
 
 import "./Profile.css";
@@ -428,6 +430,226 @@ function PinSection({ profile }) {
   );
 }
 
+
+
+/* ---------------------------------------------------------- */
+/* Address Information                                       */
+/* ---------------------------------------------------------- */
+
+function AddressSection({ profile }) {
+  const [currentAddress, setCurrentAddress] = useState({
+    city: profile?.currentAddress?.city ||
+      profile?.currentAddress?.district || "",
+    fullAddress: profile?.currentAddress?.fullAddress || ""
+  });
+
+  const emptyPermanentAddress = {
+    division: "",
+    district: "",
+    upazila: "",
+    union: "",
+    village: "",
+    postOffice: "",
+    postalCode: "",
+    houseRoad: "",
+    fullAddress: ""
+  };
+
+  const [permanentAddress, setPermanentAddress] = useState({
+    ...emptyPermanentAddress,
+    ...profile?.permanentAddress
+  });
+
+  const [currentBusy, setCurrentBusy] = useState(false);
+  const [permanentBusy, setPermanentBusy] = useState(false);
+
+  const [currentStatus, setCurrentStatus] = useState(null);
+  const [permanentStatus, setPermanentStatus] = useState(null);
+
+  const handleCurrentSubmit = async (e) => {
+    e.preventDefault();
+    setCurrentStatus(null);
+
+    try {
+      setCurrentBusy(true);
+
+      await saveCurrentAddress(currentAddress);
+
+      setCurrentStatus({
+        type: "success",
+        text: "Current address saved successfully."
+      });
+    } catch (err) {
+      setCurrentStatus({
+        type: "error",
+        text: getErrorMessage(err)
+      });
+    } finally {
+      setCurrentBusy(false);
+    }
+  };
+
+  const handlePermanentSubmit = async (e) => {
+    e.preventDefault();
+    setPermanentStatus(null);
+
+    try {
+      setPermanentBusy(true);
+
+      await savePermanentAddress(permanentAddress);
+
+      setPermanentStatus({
+        type: "success",
+        text: "Permanent address saved successfully."
+      });
+    } catch (err) {
+      setPermanentStatus({
+        type: "error",
+        text: getErrorMessage(err)
+      });
+    } finally {
+      setPermanentBusy(false);
+    }
+  };
+
+  const updatePermanent = (field, value) => {
+    setPermanentAddress(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const permanentFields = [
+    ["division", "Division / বিভাগ"],
+    ["district", "District / জেলা"],
+    ["upazila", "Upazila / Thana"],
+    ["union", "Union / Ward"],
+    ["village", "Village / Area"],
+    ["postOffice", "Post Office"],
+    ["postalCode", "Postal Code / ZIP Code"],
+    ["houseRoad", "House / Road Number"],
+    ["fullAddress", "Complete Address"]
+  ];
+
+  return (
+    <section className="pf-card">
+      <h3>Address Information</h3>
+
+      <p className="pf-help">
+        Your address information is manually provided.
+        No GPS or location tracking is used.
+      </p>
+
+      {/* CURRENT ADDRESS - SIMPLE */}
+
+      <form onSubmit={handleCurrentSubmit}>
+        <h3>Current Address</h3>
+
+        <label htmlFor="pf-current-city">
+          Current City / District
+        </label>
+
+        <input
+          id="pf-current-city"
+          className="pf-plain"
+          value={currentAddress.city}
+          onChange={e =>
+            setCurrentAddress(prev => ({
+              ...prev,
+              city: e.target.value
+            }))
+          }
+          placeholder="Enter your current city or district"
+          required
+        />
+
+        <label htmlFor="pf-current-full">
+          Complete Current Address
+        </label>
+
+        <textarea
+          id="pf-current-full"
+          className="pf-plain"
+          rows={3}
+          value={currentAddress.fullAddress}
+          onChange={e =>
+            setCurrentAddress(prev => ({
+              ...prev,
+              fullAddress: e.target.value
+            }))
+          }
+          placeholder="Enter your current full address"
+          required
+        />
+
+        <Notice status={currentStatus} />
+
+        <SubmitButton
+          busy={currentBusy}
+          type="submit"
+        >
+          Save Current Address
+        </SubmitButton>
+      </form>
+
+      <hr />
+
+      {/* PERMANENT ADDRESS - UNCHANGED FIELDS */}
+
+      <form onSubmit={handlePermanentSubmit}>
+        <h3>Permanent Address</h3>
+
+        {permanentFields.map(([field, label]) => (
+          <div key={field}>
+            <label htmlFor={`pf-permanent-${field}`}>
+              {label}
+            </label>
+
+            {field === "fullAddress" ? (
+              <textarea
+                id={`pf-permanent-${field}`}
+                className="pf-plain"
+                rows={4}
+                value={permanentAddress[field]}
+                onChange={e =>
+                  updatePermanent(field, e.target.value)
+                }
+                placeholder="Write your complete permanent address..."
+                required
+              />
+            ) : (
+              <input
+                id={`pf-permanent-${field}`}
+                className="pf-plain"
+                value={permanentAddress[field]}
+                onChange={e =>
+                  updatePermanent(field, e.target.value)
+                }
+                placeholder={`Enter ${label}`}
+                required={[
+                  "division",
+                  "district",
+                  "upazila"
+                ].includes(field)}
+              />
+            )}
+          </div>
+        ))}
+
+        <Notice status={permanentStatus} />
+
+        <SubmitButton
+          busy={permanentBusy}
+          type="submit"
+        >
+          Save Permanent Address
+        </SubmitButton>
+      </form>
+    </section>
+  );
+}
+
+
 /* ---------------------------------------------------------- */
 /* Password                                                   */
 /* ---------------------------------------------------------- */
@@ -616,6 +838,7 @@ export default function Profile() {
         <>
           <NameSection user={user} profile={profile} />
           <PhoneSection profile={profile} />
+          <AddressSection profile={profile} />
           <PinSection profile={profile} />
           <PasswordSection />
         </>

@@ -26,8 +26,7 @@ import {
   User,
   Grid2X2,
   ShieldCheck,
-  LogOut,
-  QrCode
+  LogOut
 } from "lucide-react";
 
 import "../App.css";
@@ -347,7 +346,6 @@ export default function Home() {
           {[
             { name: "Home", icon: HomeIcon },
             { name: "History", icon: Clock },
-            { name: "Scan", icon: QrCode },
             { name: "Services", icon: Grid2X2 },
             { name: "Profile", icon: User }
           ].map((tab) => {

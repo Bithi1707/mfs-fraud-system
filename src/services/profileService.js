@@ -301,3 +301,150 @@ export async function changePassword({ currentPassword, newPassword }) {
   await reauthenticate(currentPassword);
   await updatePassword(currentUser, newPassword);
 }
+
+
+/* ---------------------------------------------------------- */
+/* Current and Permanent Address                             */
+/* ---------------------------------------------------------- */
+
+export async function saveAddresses({
+  currentAddress,
+  permanentAddress
+}) {
+  const currentUser = requireUser();
+
+  const validateAddress = (address, label) => {
+    if (!address || typeof address !== "object") {
+      throw new Error(`Enter your ${label} address.`);
+    }
+
+    if (!address.division?.trim()) {
+      throw new Error(`Enter ${label} division.`);
+    }
+
+    if (!address.district?.trim()) {
+      throw new Error(`Enter ${label} district.`);
+    }
+
+    if (!address.upazila?.trim()) {
+      throw new Error(`Enter ${label} upazila.`);
+    }
+
+    if (!address.fullAddress?.trim()) {
+      throw new Error(`Enter your complete ${label} address.`);
+    }
+
+    return {
+      division: address.division.trim(),
+      district: address.district.trim(),
+      upazila: address.upazila.trim(),
+      union: address.union?.trim() || "",
+      village: address.village?.trim() || "",
+      postOffice: address.postOffice?.trim() || "",
+      postalCode: address.postalCode?.trim() || "",
+      houseRoad: address.houseRoad?.trim() || "",
+      fullAddress: address.fullAddress.trim()
+    };
+  };
+
+  const cleanCurrent = validateAddress(
+    currentAddress,
+    "current"
+  );
+
+  const cleanPermanent = validateAddress(
+    permanentAddress,
+    "permanent"
+  );
+
+  await setDoc(
+    doc(db, "users", currentUser.uid),
+    {
+      currentAddress: cleanCurrent,
+      permanentAddress: cleanPermanent,
+      updatedAt: serverTimestamp()
+    },
+    { merge: true }
+  );
+
+  return true;
+}
+
+
+/* ---------------------------------------------------------- */
+/* Save Current Address Separately                            */
+/* ---------------------------------------------------------- */
+
+export async function saveCurrentAddress(address) {
+  const currentUser = requireUser();
+
+  if (!address?.city?.trim()) {
+    throw new Error("Enter your current city or district.");
+  }
+
+  if (!address?.fullAddress?.trim()) {
+    throw new Error("Enter your complete current address.");
+  }
+
+  await setDoc(
+    doc(db, "users", currentUser.uid),
+    {
+      currentAddress: {
+        city: address.city.trim(),
+        fullAddress: address.fullAddress.trim()
+      },
+      updatedAt: serverTimestamp()
+    },
+    { merge: true }
+  );
+
+  return true;
+}
+
+
+/* ---------------------------------------------------------- */
+/* Save Permanent Address Separately                          */
+/* ---------------------------------------------------------- */
+
+export async function savePermanentAddress(address) {
+  const currentUser = requireUser();
+
+  if (!address?.division?.trim()) {
+    throw new Error("Enter permanent division.");
+  }
+
+  if (!address?.district?.trim()) {
+    throw new Error("Enter permanent district.");
+  }
+
+  if (!address?.upazila?.trim()) {
+    throw new Error("Enter permanent upazila.");
+  }
+
+  if (!address?.fullAddress?.trim()) {
+    throw new Error("Enter your complete permanent address.");
+  }
+
+  const cleanAddress = {
+    division: address.division.trim(),
+    district: address.district.trim(),
+    upazila: address.upazila.trim(),
+    union: address.union?.trim() || "",
+    village: address.village?.trim() || "",
+    postOffice: address.postOffice?.trim() || "",
+    postalCode: address.postalCode?.trim() || "",
+    houseRoad: address.houseRoad?.trim() || "",
+    fullAddress: address.fullAddress.trim()
+  };
+
+  await setDoc(
+    doc(db, "users", currentUser.uid),
+    {
+      permanentAddress: cleanAddress,
+      updatedAt: serverTimestamp()
+    },
+    { merge: true }
+  );
+
+  return true;
+}

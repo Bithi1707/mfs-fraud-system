@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { KeyRound } from "lucide-react";
+import { PIN_LENGTH, verifyPin, getErrorMessage } from "../../services/profileService";
 import {
   ArrowLeft,
   Store,
@@ -13,17 +15,17 @@ import {
 
 import { useAuth } from "../../context/AuthContext";
 import { saveTransaction } from "../../services/transactionService";
-
 import "./Payment.css";
 
 export default function Payment({ onBack }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   console.log("Payment authenticated user:", user);
   console.log("Payment user UID:", user?.uid);
   const [merchant, setMerchant] = useState("");
   const [merchantNumber, setMerchantNumber] = useState("");
   const [amount, setAmount] = useState("");
   const [reference, setReference] = useState("");
+  const [pin, setPin] = useState("");
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -52,37 +54,55 @@ export default function Payment({ onBack }) {
     setStep(2);
   };
 
-  
-const handleConfirm = async () => {
-  try {
-    setError("");
 
-    if (!user?.uid) {
-      setError("Please login first.");
-      return;
+  const handleConfirm = async () => {
+    try {
+      setError("");
+
+      if (!user?.uid) {
+        throw new Error("Please login first.");
+      }
+
+      // Check whether user has set a PIN
+      if (!profile?.hasPin) {
+        throw new Error("Please set your transaction PIN from Profile first.");
+      }
+
+      // Validate 5-digit PIN
+      if (!new RegExp(`^\\d{${PIN_LENGTH}}$`).test(pin)) {
+        throw new Error(`Enter your ${PIN_LENGTH}-digit PIN.`);
+      }
+
+      setLoading(true);
+
+      // Verify transaction PIN
+      const isValid = await verifyPin(pin);
+
+      if (!isValid) {
+        throw new Error("Incorrect PIN. Please try again.");
+      }
+
+      // Existing transaction saving logic
+      const result = await saveTransaction({
+        userId: user.uid,
+        type: "payment",
+        merchant,
+        merchantNumber,
+        amount,
+        reference
+      });
+
+      setTransactionId(result.id);
+      setPin("");
+      setStep(3);
+
+    } catch (err) {
+      console.error("Payment error:", err);
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(true);
-
-    const result = await saveTransaction({
-      userId: user.uid,
-      type: "payment",
-      merchant,
-      merchantNumber,
-      amount,
-      reference
-    });
-
-    setTransactionId(result.id);
-    setStep(3);
-
-  } catch (err) {
-    console.error("Payment error:", err);
-    setError(err.message || "Payment could not be recorded.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   return (
@@ -207,12 +227,38 @@ const handleConfirm = async () => {
             })}</h2>
           </div>
 
+          <label>Transaction PIN</label>
+
+          <div className="payment-input">
+            <KeyRound size={18} />
+
+            <input
+              type="password"
+              value={pin}
+              onChange={(e) =>
+                setPin(
+                  e.target.value.replace(/\D/g, "").slice(0, PIN_LENGTH)
+                )
+              }
+              placeholder="Enter your 5-digit PIN"
+              inputMode="numeric"
+              autoComplete="off"
+              maxLength={PIN_LENGTH}
+            />
+          </div>
+
+          {profile && !profile.hasPin && (
+            <p className="payment-error">
+              You haven't set a PIN yet. Please set it from Profile.
+            </p>
+          )}
+
           {error && <p className="payment-error">{error}</p>}
 
           <button
             className="payment-primary"
             onClick={handleConfirm}
-            disabled={loading}
+            disabled={loading || pin.length !== PIN_LENGTH}
           >
             {loading ? (
               <>

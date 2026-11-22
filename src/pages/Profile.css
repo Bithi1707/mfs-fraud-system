@@ -376,3 +376,31 @@
     animation: none;
   }
 }
+
+
+/* Address Information */
+
+.pf-card textarea.pf-plain {
+  width: 100%;
+  min-height: 100px;
+  padding: 13px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.pf-card hr {
+  border: 0;
+  border-top: 1px solid #eee8f0;
+  margin: 25px 0;
+}
+
+.pf-card > h3:not(:first-child) {
+  margin-top: 22px;
+  margin-bottom: 15px;
+}
+
+.pf-card > div > label {
+  display: block;
+  margin: 15px 0 8px;
+}
