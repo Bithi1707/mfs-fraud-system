@@ -9,6 +9,7 @@ export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -21,10 +22,20 @@ export default function Register() {
       return;
     }
 
+    if (phone && !/^01[3-9]\d{8}$/.test(phone)) {
+      setError("Enter a valid Bangladesh mobile number (01XXXXXXXXX), or leave it empty.");
+      return;
+    }
+
     try {
       setLoading(true);
-      await register(name, email, password);
-      navigate("/");
+      const { setupError } = await register(name, email, password, phone);
+
+      if (setupError) {
+        navigate("/profile", { state: { notice: setupError } });
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -54,6 +65,19 @@ export default function Register() {
           placeholder="Enter your email"
           required
         />
+
+        <label>Mobile Number (Optional)</label>
+        <input
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 11))}
+          placeholder="01XXXXXXXXX"
+          inputMode="numeric"
+          maxLength={11}
+        />
+        <small className="auth-hint">
+          Used for Send Money. It cannot be changed later. You can skip now and add it from your profile.
+        </small>
 
         <label>Password</label>
         <input

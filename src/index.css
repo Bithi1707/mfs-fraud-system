@@ -115,3 +115,11 @@ button {
   font-weight: 700;
   text-decoration: none;
 }
+
+.auth-hint {
+  display: block;
+  margin-top: 7px;
+  color: #9992a7;
+  font-size: 11px;
+  line-height: 1.45;
+}

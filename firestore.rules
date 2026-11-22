@@ -1,0 +1,150 @@
+rules_version = '2';
+
+// Paste this into Firebase Console > Firestore Database > Rules > Publish.
+// Made for a TEST app: good protection against mistakes and casual tampering,
+// but real money would need a server (Cloud Functions) to move balances.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    /* ---------------- Profiles ---------------- */
+
+    function hasNoPhone(data) {
+      return !('phone' in data) || data.phone == null;
+    }
+
+    function phoneReservedByMe(phone) {
+      return getAfter(/databases/$(database)/documents/phoneNumbers/$(phone)).data.uid == request.auth.uid;
+    }
+
+    // Only the owner can read/write. A saved phone number can never change.
+    match /users/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+
+      allow create: if signedIn() && request.auth.uid == uid
+        && (hasNoPhone(request.resource.data)
+            || phoneReservedByMe(request.resource.data.phone));
+
+      allow update: if signedIn() && request.auth.uid == uid
+        && (
+          (!hasNoPhone(resource.data)
+            && request.resource.data.phone == resource.data.phone)
+          ||
+          (hasNoPhone(resource.data)
+            && (hasNoPhone(request.resource.data)
+                || phoneReservedByMe(request.resource.data.phone)))
+        );
+
+      allow delete: if false;
+    }
+
+    // One document per mobile number: no two accounts can share a number.
+    match /phoneNumbers/{phone} {
+      allow get: if signedIn();
+      allow list: if false;
+
+      allow create: if signedIn()
+        && phone.matches('^01[3-9][0-9]{8}$')
+        && request.resource.data.uid == request.auth.uid
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.phone == phone;
+
+      allow update, delete: if false;
+    }
+
+    // PIN (stored as a salted hash). Only the owner can touch it.
+    match /pins/{uid} {
+      allow read, create, update: if signedIn() && request.auth.uid == uid;
+      allow delete: if false;
+    }
+
+    /* ---------------- Wallet ---------------- */
+
+    function oldBal() {
+      return resource == null ? 0 : resource.data.balance;
+    }
+
+    function newBal() {
+      return request.resource.data.balance;
+    }
+
+    function oldCount() {
+      return resource == null ? 0 : resource.data.get('cashInCount', 0);
+    }
+
+    function oldDay() {
+      return resource == null ? 0 : resource.data.get('cashInDay', 0);
+    }
+
+    function countersUnchanged() {
+      return request.resource.data.cashInCount == oldCount()
+        && request.resource.data.cashInDay == oldDay();
+    }
+
+    // The transaction written in the same save as this wallet change.
+    function linkedTx() {
+      return getAfter(/databases/$(database)/documents/transactions/$(request.resource.data.lastTxId)).data;
+    }
+
+    match /wallets/{uid} {
+      // Sending money needs to read the receiver's balance, so any signed-in
+      // user can read ONE wallet by id. Listing all wallets is not allowed.
+      allow get: if signedIn();
+      allow list: if false;
+
+      allow create, update: if signedIn()
+        && newBal() is int
+        && newBal() >= 0
+        && (
+          // 1. Empty wallet created by the owner
+          (request.auth.uid == uid
+            && newBal() == oldBal()
+            && countersUnchanged())
+
+          // 2. Owner sends money out
+          || (request.auth.uid == uid
+            && newBal() < oldBal()
+            && countersUnchanged()
+            && linkedTx().type == 'send_money'
+            && linkedTx().userId == uid
+            && linkedTx().amount == oldBal() - newBal())
+
+          // 3. Owner cashes in: max 15,000 each, max 3 per day
+          || (request.auth.uid == uid
+            && newBal() > oldBal()
+            && linkedTx().type == 'cash_in'
+            && linkedTx().userId == uid
+            && linkedTx().amount == newBal() - oldBal()
+            && linkedTx().amount <= 15000
+            && request.resource.data.cashInDay >= oldDay()
+            && request.resource.data.cashInCount ==
+                 (request.resource.data.cashInDay == oldDay() ? oldCount() + 1 : 1)
+            && request.resource.data.cashInCount <= 3)
+
+          // 4. Someone else sends money to this wallet
+          || (request.auth.uid != uid
+            && newBal() > oldBal()
+            && countersUnchanged()
+            && linkedTx().type == 'send_money'
+            && linkedTx().userId == request.auth.uid
+            && linkedTx().receiverId == uid
+            && linkedTx().amount == newBal() - oldBal())
+        );
+
+      allow delete: if false;
+    }
+
+    /* ---------------- Transactions ---------------- */
+
+    match /transactions/{id} {
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow read: if signedIn()
+        && (resource.data.userId == request.auth.uid
+            || resource.data.receiverId == request.auth.uid);
+      allow update, delete: if false;
+    }
+  }
+}

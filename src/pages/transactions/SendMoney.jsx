@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   User,
@@ -8,17 +9,23 @@ import {
   ShieldCheck,
   CheckCircle2,
   ArrowRight,
-  LoaderCircle
+  LoaderCircle,
+  KeyRound
 } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
-import { saveTransaction } from "../../services/transactionService";
+import { sendMoney } from "../../services/walletService";
+import { PIN_LENGTH, getErrorMessage } from "../../services/profileService";
+import { formatTaka } from "../../utils/transactionView";
 
 import "./SendMoney.css";
 
 export default function SendMoney({ onBack }) {
-  const { user } = useAuth();
+  const { user, profile, wallet } = useAuth();
+  const navigate = useNavigate();
+  const balance = wallet?.balance ?? 0;
 
+  const [pin, setPin] = useState("");
   const [phone, setPhone] = useState("");
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
@@ -37,8 +44,13 @@ export default function SendMoney({ onBack }) {
       return;
     }
 
-    if (Number(amount) < 1 || !Number.isFinite(Number(amount))) {
-      setError("Enter a valid amount.");
+    if (!Number.isInteger(Number(amount)) || Number(amount) < 1) {
+      setError("Enter a whole amount of at least ৳1.");
+      return;
+    }
+
+    if (Number(amount) > balance) {
+      setError("Insufficient balance. Use Cash In to add money first.");
       return;
     }
 
@@ -61,21 +73,21 @@ const handleConfirm = async () => {
       throw new Error("Please login first.");
     }
 
-    const result = await saveTransaction({
-      userId: user.uid,
-      type: "send_money",
-      recipient: recipient,
-      phone: phone,
+    const result = await sendMoney({
+      recipientPhone: phone,
+      recipientName: recipient,
       amount: Number(amount),
-      reference: reference
+      pin,
+      reference
     });
 
     setTransactionId(result.id);
+    setPin("");
     setStep(3);
 
   } catch (err) {
     console.error("Transaction Error:", err);
-    setError(err.message || "Transaction could not be saved.");
+    setError(getErrorMessage(err));
   } finally {
     setLoading(false);
   }
@@ -136,6 +148,7 @@ const handleConfirm = async () => {
 
           <div className="send-card">
             <h3>Transfer Amount</h3>
+            <p>Available balance: ৳ {formatTaka(balance)}</p>
 
             <label>Amount (BDT)</label>
 
@@ -144,7 +157,7 @@ const handleConfirm = async () => {
               <input
                 type="number"
                 min="1"
-                step="0.01"
+                step="1"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
@@ -199,12 +212,41 @@ const handleConfirm = async () => {
             <h2>৳ {Number(amount).toLocaleString("en-US")}</h2>
           </div>
 
+          <label>Transaction PIN</label>
+          <div className="send-input">
+            <KeyRound size={18} />
+            <input
+              type="password"
+              value={pin}
+              onChange={(e) =>
+                setPin(e.target.value.replace(/\D/g, "").slice(0, PIN_LENGTH))
+              }
+              placeholder={`Enter your ${PIN_LENGTH}-digit PIN`}
+              inputMode="numeric"
+              autoComplete="off"
+              maxLength={PIN_LENGTH}
+            />
+          </div>
+
+          {profile && !profile.hasPin && (
+            <p className="send-error">
+              You haven't set a PIN yet.{" "}
+              <button
+                type="button"
+                className="send-linkbtn"
+                onClick={() => navigate("/profile")}
+              >
+                Set it in Profile
+              </button>
+            </p>
+          )}
+
           {error && <p className="send-error">{error}</p>}
 
           <button
             className="send-primary"
             onClick={handleConfirm}
-            disabled={loading}
+            disabled={loading || pin.length !== PIN_LENGTH}
           >
             {loading ? (
               <><LoaderCircle size={19} /> Processing...</>
@@ -226,8 +268,8 @@ const handleConfirm = async () => {
         <div className="send-card success-card">
           <CheckCircle2 size={65} color="#20A574" />
 
-          <h2>Transaction Recorded!</h2>
-          <p>Your Send Money transaction has been saved.</p>
+          <h2>Money Sent!</h2>
+          <p>The money has been moved to {recipient}'s wallet.</p>
 
           <h1>৳ {Number(amount).toLocaleString("en-US")}</h1>
 
@@ -244,6 +286,11 @@ const handleConfirm = async () => {
           <div className="summary-row">
             <span>Transaction ID</span>
             <strong>{transactionId}</strong>
+          </div>
+
+          <div className="summary-row">
+            <span>New Balance</span>
+            <strong>৳ {formatTaka(balance)}</strong>
           </div>
 
           <button
