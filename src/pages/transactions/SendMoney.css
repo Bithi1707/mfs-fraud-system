@@ -257,3 +257,14 @@
     box-shadow: 0 8px 40px rgba(30, 20, 50, .09);
   }
 }
+
+.send-linkbtn {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: #d9468d;
+  font-weight: 700;
+  font-size: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}

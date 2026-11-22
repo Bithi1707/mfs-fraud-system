@@ -1,0 +1,29 @@
+.cashin-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.cashin-chips button {
+  padding: 8px 13px;
+  border: 1px solid #f3d3e3;
+  border-radius: 99px;
+  background: #fff7fb;
+  color: #d9468d;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cashin-chips button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cashin-limit {
+  margin: 16px 0 0 !important;
+  font-size: 11px !important;
+  color: #9992a7;
+  line-height: 1.5;
+}

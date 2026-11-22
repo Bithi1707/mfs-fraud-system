@@ -1,0 +1,87 @@
+.hist-page {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100dvh;
+  margin: auto;
+  padding: calc(24px + env(safe-area-inset-top)) 20px 48px;
+  background: #fff;
+  color: #29243c;
+  font-family: Inter, "Segoe UI", sans-serif;
+}
+
+.hist-header {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 20px;
+}
+
+.hist-header h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.hist-header p {
+  margin: 4px 0 0;
+  color: #9992a7;
+  font-size: 11px;
+}
+
+.hist-back {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 13px;
+  background: #fff0f5;
+  color: #d9468d;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.hist-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.hist-filters button {
+  padding: 9px 15px;
+  border: 1px solid #f1eaf0;
+  border-radius: 99px;
+  background: #fff;
+  color: #6f6880;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.hist-filters button.active {
+  border-color: transparent;
+  background: linear-gradient(110deg, #e51b87, #8526c7);
+  color: #fff;
+}
+
+.hist-error {
+  margin-bottom: 12px;
+  color: #c4223f;
+  font-size: 12px;
+}
+
+.hist-spin {
+  vertical-align: middle;
+  animation: hist-spin 0.9s linear infinite;
+}
+
+@keyframes hist-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hist-spin {
+    animation: none;
+  }
+}

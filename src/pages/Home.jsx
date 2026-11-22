@@ -2,6 +2,12 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Payment from "./transactions/Payment";
+import { useTransactions } from "../hooks/useTransactions";
+import {
+  describeTransaction,
+  formatDateTime,
+  formatTaka
+} from "../utils/transactionView";
 import {
   Wallet,
   Bell,
@@ -20,7 +26,6 @@ import {
   User,
   Grid2X2,
   ShieldCheck,
-  CreditCard,
   LogOut,
   QrCode
 } from "lucide-react";
@@ -63,67 +68,44 @@ const services = [
   }
 ];
 
-// Demo transactions: Firebase integration will come later.
-const transactions = [
-  {
-    id: 1,
-    name: "Rahim Ahmed",
-    detail: "Transfer · 017XXXXXXXX",
-    amount: 1500,
-    date: "Today, 10:42 AM",
-    type: "send",
-    status: "Successful"
-  },
-  {
-    id: 2,
-    name: "Cash Out",
-    detail: "Agent · 018XXXXXXXX",
-    amount: 2000,
-    date: "Today, 09:15 AM",
-    type: "cashout",
-    status: "Successful"
-  },
-  {
-    id: 3,
-    name: "Cash In",
-    detail: "Agent · 019XXXXXXXX",
-    amount: 5000,
-    date: "Yesterday, 06:20 PM",
-    type: "receive",
-    status: "Successful"
-  },
-  {
-    id: 4,
-    name: "Shopping Payment",
-    detail: "Merchant Payment",
-    amount: 850,
-    date: "Yesterday, 02:10 PM",
-    type: "payment",
-    status: "Successful"
-  }
-];
-
 export default function Home() {
-  const { user, logout } = useAuth();
+  const { user, profile, wallet, logout } = useAuth();
   const navigate = useNavigate();
 
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("Home");
   const [activeTransaction, setActiveTransaction] = useState(null);
-  const userName = user?.displayName || "Finora User";
+  const userName = profile?.name || user?.displayName || "NextPay User";
   const firstName = userName.split(" ")[0];
 
-  const filteredTransactions = transactions.filter((item) =>
-    `${item.name} ${item.detail} ${item.type}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
+  const balance = wallet?.balance ?? 0;
+  const [balanceWhole, balanceDecimals] = formatTaka(balance).split(".");
+
+  const { transactions, loading: transactionsLoading } = useTransactions(
+    user?.uid
   );
+
+  // Home only shows the latest 4. The History page shows everything.
+  const recentTransactions = transactions
+    .filter((item) => {
+      const view = describeTransaction(item, user?.uid);
+
+      return `${view.title} ${view.detail} ${item.type}`
+        .toLowerCase()
+        .includes(search.toLowerCase());
+    })
+    .slice(0, 4);
   
   const handleService = (service) => {
 
   if (service === "Send Money") {
     navigate("/send-money");
+    return;
+  }
+
+  if (service === "Cash In") {
+    navigate("/cash-in");
     return;
   }
 
@@ -175,7 +157,11 @@ export default function Home() {
               <span className="notification-dot"></span>
             </button>
 
-            <button className="profile-button">
+            <button
+              className="profile-button"
+              onClick={() => navigate("/profile")}
+              aria-label="Open profile"
+            >
               {firstName.charAt(0).toUpperCase()}
             </button>
           </div>
@@ -214,7 +200,7 @@ export default function Home() {
 
           <h2 className="balance-amount">
             {balanceVisible ? (
-              <>৳ 24,580<span>.50</span></>
+              <>৳ {balanceWhole}<span>.{balanceDecimals}</span></>
             ) : (
               "৳ ••••••••"
             )}
@@ -291,7 +277,7 @@ export default function Home() {
 
             <button
               className="see-all-button"
-              onClick={() => setActiveTab("History")}
+              onClick={() => navigate("/history")}
             >
               See all <ChevronRight size={16} />
             </button>
@@ -308,43 +294,49 @@ export default function Home() {
           </div>
 
           <div className="transaction-list">
-            {filteredTransactions.length > 0 ? (
-              filteredTransactions.map((item) => (
-                <div className="transaction-item" key={item.id}>
-                  <div className={`transaction-icon ${item.type}`}>
-                    {item.type === "receive" ? (
-                      <ArrowDownLeft size={21} />
-                    ) : item.type === "send" ? (
-                      <ArrowUpRight size={21} />
-                    ) : item.type === "cashout" ? (
-                      <Banknote size={20} />
-                    ) : item.type === "debit" ? (
-                      <CreditCard size={20} />
-                    ) : (
-                      <ShoppingBag size={20} />
-                    )}
-                  </div>
+            {transactionsLoading ? (
+              <div className="empty-state">Loading transactions...</div>
+            ) : recentTransactions.length > 0 ? (
+              recentTransactions.map((item) => {
+                const view = describeTransaction(item, user?.uid);
+                const incoming = view.direction === "in";
 
-                  <div className="transaction-info">
-                    <h4>{item.name}</h4>
-                    <p>{item.detail}</p>
-                    <small>{item.date}</small>
-                  </div>
+                return (
+                  <div className="transaction-item" key={item.id}>
+                    <div className={`transaction-icon ${view.kind}`}>
+                      {view.kind === "receive" ? (
+                        <ArrowDownLeft size={21} />
+                      ) : view.kind === "send" ? (
+                        <ArrowUpRight size={21} />
+                      ) : view.kind === "cashout" ? (
+                        <Banknote size={20} />
+                      ) : (
+                        <ShoppingBag size={20} />
+                      )}
+                    </div>
 
-                  <div className="transaction-amount">
-                    <strong className={item.type === "receive" ? "credit" : ""}>
-                      {item.type === "receive" ? "+" : "-"} ৳
-                      {item.amount.toLocaleString("en-US", {
-                        minimumFractionDigits: 2
-                      })}
-                    </strong>
-                    <span>{item.status}</span>
+                    <div className="transaction-info">
+                      <h4>{view.title}</h4>
+                      <p>{view.detail}</p>
+                      <small>{formatDateTime(item)}</small>
+                    </div>
+
+                    <div className="transaction-amount">
+                      <strong className={incoming ? "credit" : ""}>
+                        {incoming ? "+" : "-"} ৳{formatTaka(item.amount)}
+                      </strong>
+                      <span>
+                        {item.status === "COMPLETED" ? "Completed" : "Submitted"}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="empty-state">
-                No matching transactions found.
+                {search
+                  ? "No matching transactions found."
+                  : "No transactions yet. Try Cash In to get started."}
               </div>
             )}
           </div>
@@ -368,8 +360,10 @@ export default function Home() {
                   activeTab === tab.name ? "active" : ""
                 }`}
                 onClick={() => {
-                  if (tab.name === "Profile") {
-                    handleLogout();
+                  if (tab.name === "History") {
+                    navigate("/history");
+                  } else if (tab.name === "Profile") {
+                    navigate("/profile");
                   } else {
                     setActiveTab(tab.name);
                   }
