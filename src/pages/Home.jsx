@@ -3,6 +3,8 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Payment from "./transactions/Payment";
 import { useTransactions } from "../hooks/useTransactions";
+import { useNotifications } from "../hooks/useNotifications";
+import NotificationModal from "../components/NotificationModal";
 import {
   describeTransaction,
   formatDateTime,
@@ -75,6 +77,7 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("Home");
   const [activeTransaction, setActiveTransaction] = useState(null);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const userName = profile?.name || user?.displayName || "NextPay User";
   const firstName = userName.split(" ")[0];
 
@@ -84,6 +87,14 @@ export default function Home() {
   const { transactions, loading: transactionsLoading } = useTransactions(
     user?.uid
   );
+
+  const {
+    notifications,
+    hasUnread,
+    deleteNotification,
+    clearAllNotifications,
+    markAllAsRead
+  } = useNotifications(user?.uid);
 
   // Home only shows the latest 4. The History page shows everything.
   const recentTransactions = transactions
@@ -151,9 +162,16 @@ export default function Home() {
           </div>
 
           <div className="header-actions">
-            <button className="notification-button" aria-label="Notifications">
+            <button
+              className={`notification-button ${hasUnread ? "has-unread bounce" : ""}`}
+              onClick={() => {
+                setIsNotificationOpen(true);
+                markAllAsRead();
+              }}
+              aria-label="Notifications"
+            >
               <Bell size={20} />
-              <span className="notification-dot"></span>
+              {hasUnread && <span className="notification-dot pulse"></span>}
             </button>
 
             <button
@@ -379,6 +397,14 @@ export default function Home() {
           <LogOut size={15} />
           Logout
         </button>
+
+        <NotificationModal
+          isOpen={isNotificationOpen}
+          onClose={() => setIsNotificationOpen(false)}
+          notifications={notifications}
+          onDelete={deleteNotification}
+          onClearAll={clearAllNotifications}
+        />
 
       </main>
     )}
