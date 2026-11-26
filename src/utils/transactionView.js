@@ -70,13 +70,15 @@ export function describeTransaction(item, uid) {
     case "cash_out":
       return { kind: "cashout", direction: "out", title: "Cash Out", detail: "Withdrawal" };
 
+
     case "mobile_recharge":
       return {
         kind: "cashout",
         direction: "out",
         title: "Mobile Recharge",
-        detail: item.phone || ""
+        detail: `${item.operator || ""} · ${item.phone || ""}`
       };
+
 
     default:
       return { kind: "payment", direction: "out", title: "Transaction", detail: "" };

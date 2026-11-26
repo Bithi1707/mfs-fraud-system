@@ -17,6 +17,8 @@ import Payment from "./pages/transactions/Payment";
 import Profile from "./pages/Profile";
 import History from "./pages/History";
 import CashIn from "./pages/transactions/CashIn";
+import CashOut from "./pages/transactions/CashOut";
+import MobileRecharge from "./pages/transactions/MobileRecharge";
 
 function SendMoneyRoute() {
   const navigate = useNavigate();
@@ -38,12 +40,32 @@ function CashInRoute() {
   );
 }
 
+function CashOutRoute() {
+  const navigate = useNavigate();
+
+  return (
+    <ProtectedRoute>
+      <CashOut onBack={() => navigate("/")} />
+    </ProtectedRoute>
+  );
+}
+
 function PaymentRoute() {
   const navigate = useNavigate();
 
   return (
     <ProtectedRoute>
       <Payment onBack={() => navigate("/")} />
+    </ProtectedRoute>
+  );
+}
+
+function MobileRechargeRoute() {
+  const navigate = useNavigate();
+
+  return (
+    <ProtectedRoute>
+      <MobileRecharge onBack={() => navigate("/")} />
     </ProtectedRoute>
   );
 }
@@ -70,7 +92,25 @@ function App() {
             element={<SendMoneyRoute />}
           />
 
-          <Route path="/cash-in" element={<CashInRoute />} />
+          <Route
+            path="/cash-in"
+            element={<CashInRoute />}
+          />
+
+          <Route
+            path="/cash-out"
+            element={<CashOutRoute />}
+          />
+
+          <Route
+            path="/payment"
+            element={<PaymentRoute />}
+          />
+
+          <Route
+            path="/mobile-recharge"
+            element={<MobileRechargeRoute />}
+          />
 
           <Route
             path="/history"
@@ -88,11 +128,6 @@ function App() {
                 <Profile />
               </ProtectedRoute>
             }
-          />
-
-          <Route
-            path="/payment"
-            element={<PaymentRoute />}
           />
         </Routes>
       </AuthProvider>

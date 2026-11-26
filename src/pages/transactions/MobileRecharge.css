@@ -1,0 +1,158 @@
+
+.recharge-card > label {
+  display: block;
+  margin-top: 22px;
+  margin-bottom: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #373044;
+}
+
+.operator-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.operator-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 90px;
+  padding: 10px 5px;
+  background: #fff;
+  border: 1px solid #eee5ed;
+  border-radius: 13px;
+  color: #51475b;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.operator-item.selected {
+  border: 2px solid #d9468d;
+  background: #fff6fa;
+  color: #d9468d;
+}
+
+.operator-logo {
+  display: flex;
+  width: 39px;
+  height: 39px;
+  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.recharge-phone-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #eadfe9;
+  border-radius: 12px;
+  padding: 0 13px;
+  height: 50px;
+  color: #d9468d;
+}
+
+.recharge-phone-input input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 15px;
+  color: #30283a;
+}
+
+.connection-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.connection-options button {
+  height: 43px;
+  border: 1px solid #eee0eb;
+  background: #fff;
+  color: #665a70;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.connection-options button.active {
+  background: #fff3f9;
+  color: #d9468d;
+  border: 1px solid #d9468d;
+}
+
+.recharge-quick-amounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 13px;
+}
+
+.recharge-quick-amounts button {
+  padding: 9px 14px;
+  border: 1px solid #f3d3e3;
+  border-radius: 99px;
+  background: #fff7fb;
+  color: #d9468d;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.recharge-quick-amounts button.active {
+  background: #d9468d;
+  color: white;
+  border-color: #d9468d;
+}
+
+.recharge-pin-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid #eadfe9;
+  border-radius: 11px;
+  outline-color: #d9468d;
+  font-size: 15px;
+  letter-spacing: 5px;
+  box-sizing: border-box;
+}
+
+.recharge-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 12px;
+  background: #fff5fa;
+  border-radius: 10px;
+  color: #a33c75;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.recharge-demo-notice {
+  margin: 18px 0;
+  padding: 12px;
+  border-radius: 10px;
+  background: #fff5e6;
+  color: #9b6416;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+@media (max-width: 360px) {
+  .operator-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
