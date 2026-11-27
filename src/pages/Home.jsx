@@ -26,7 +26,7 @@ import {
   Home as HomeIcon,
   Clock,
   User,
-  Grid2X2,
+  // Grid2X2,
   ShieldCheck,
   LogOut
 } from "lucide-react";
@@ -374,7 +374,7 @@ export default function Home() {
             {[
               { name: "Home", icon: HomeIcon },
               { name: "History", icon: Clock },
-              { name: "Services", icon: Grid2X2 },
+              // { name: "Services", icon: Grid2X2 },
               { name: "Profile", icon: User }
             ].map((tab) => {
               const Icon = tab.icon;
